@@ -1,0 +1,33 @@
+{
+  "name": "nanamin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "clean": "rm -rf .next node_modules/.cache",
+    "clean:cache": "rm -rf .next/cache"
+  },
+  "dependencies": {
+    "@mantine/core": "^8.3.1",
+    "@mantine/dropzone": "^8.3.1",
+    "@mantine/notifications": "^8.3.1",
+    "@tabler/icons-react": "^3.34.1",
+    "browser-image-compression": "^2.0.2",
+    "jszip": "^3.10.1",
+    "next": "15.5.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.14",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "15.5.3",
+    "typescript": "^5.9.2"
+  },
+  "packageManager": "pnpm@10.10.0"
+}
