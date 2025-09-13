@@ -1,41 +1,67 @@
-# Nanamin
+# 📚 Nanamin
 
-Fast, privacy-first CBZ compression in your browser.
+**Fast, privacy-first comic & manga compression in your browser.**
 
-## Features
+Compress your CBZ and CBR files by 30-70% while maintaining visual quality. Everything happens locally in your browser - your files never leave your device.
 
-- 🔒 Files never leave your browser
-- ⚡ Rust + WebAssembly performance
-- 🎨 Catppuccin Mocha theme
-- 📱 Single viewport design
+## ✨ Features
 
-## Tech Stack
+- 🔒 **100% Private** - Files never leave your browser
+- 🎯 **Smart Compression** - Adjustable quality settings (30-100%)
+- 📱 **Modern UI** - Clean, responsive design with Mantine components
+- 🌙 **Dark Theme** - Easy on the eyes for long sessions
+- 📊 **Real-time Stats** - See compression results instantly
 
-- Next.js 15 + TypeScript
-- Rust + WebAssembly
-- Tailwind CSS + Shadcn/ui
-- Catppuccin colors + MonoLisa font
+## 🚀 Tech Stack
 
-## Development
+- **Framework**: Next.js 15 + TypeScript
+- **UI Library**: Mantine + Tabler Icons
+- **Compression**: browser-image-compression + JSZip
+- **Styling**: Modern CSS-in-JS with Mantine
+- **Deployment**: Vercel-optimized
+
+## 🛠️ Development
 
 ```bash
 # Install dependencies
 pnpm install
 
-# Build WASM
-cd cbz-compressor-wasm
-wasm-pack build --target web
-cd ..
-
-# Start dev server
+# Start development server
 pnpm dev
+
+# Build for production
+pnpm build
+
+# Type checking
+pnpm type-check
 ```
 
-## Deployment
+## 📦 Deployment
+
+The project is optimized for Vercel deployment:
 
 ```bash
+# Deploy to Vercel
+vercel
+
+# Or build locally
 pnpm build
+pnpm start
 ```
+
+## 🎯 How It Works
+
+1. **Drop Files**: Drag & drop your CBZ/CBR files
+2. **Adjust Quality**: Use the slider to set compression level
+3. **Process**: Click compress and watch the magic happen
+4. **Download**: Get your compressed files instantly
+
+## 🔧 Configuration
+
+- **Quality Settings**: 30% (max compression) to 100% (minimal compression)
+- **Supported Formats**: CBZ, CBR input files
+- **Output Format**: CBZ with WebP images
+- **File Size Limit**: 500MB per file (browser dependent)
 
 ## License
 

@@ -535,12 +535,12 @@ export default function Home() {
                     <Stack gap="md" align="center">
                       {/* Main Compression Result */}
                       <Paper p="lg" ta="center" radius="lg"
-                        style={{ 
-                          background: stats.savings > 0 
-                            ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.08))' 
+                        style={{
+                          background: stats.savings > 0
+                            ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.08))'
                             : 'linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(251, 146, 60, 0.08))',
-                          border: stats.savings > 0 
-                            ? '1px solid rgba(34, 197, 94, 0.25)' 
+                          border: stats.savings > 0
+                            ? '1px solid rgba(34, 197, 94, 0.25)'
                             : '1px solid rgba(251, 146, 60, 0.25)',
                           minWidth: '160px',
                           maxWidth: '200px'

@@ -3,34 +3,44 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Webpack configuration for better cache management
   webpack: (config, { dev, isServer }) => {
-    // Optimize cache configuration
-    if (config.cache) {
-      config.cache = {
-        ...config.cache,
-        // Set cache size limits to prevent bloat
-        maxMemoryGenerations: dev ? 3 : 1,
-        // Optimize cache directory structure
-        cacheDirectory: config.cache.cacheDirectory,
-        // Add build dependencies for better invalidation
-        buildDependencies: {
-          config: [__filename],
-          ...config.cache.buildDependencies,
-        },
-        // Optimize serialization to reduce warnings
-        compression: 'gzip',
-        hashAlgorithm: 'xxhash64',
-      };
+    // Disable cache in development to avoid serialization warnings
+    if (dev) {
+      config.cache = false;
+    } else {
+      // Optimize cache configuration for production only
+      if (config.cache) {
+        config.cache = {
+          ...config.cache,
+          maxMemoryGenerations: 1,
+          cacheDirectory: config.cache.cacheDirectory,
+          buildDependencies: {
+            config: [__filename],
+            ...config.cache.buildDependencies,
+          },
+        };
+      }
     }
 
-    // Optimize module concatenation to reduce large strings
+    // Optimize module handling
     config.optimization = {
       ...config.optimization,
-      concatenateModules: !dev,
-      // Reduce chunk size to prevent large string serialization
+      // Better chunk splitting to avoid large strings
       splitChunks: {
-        ...config.optimization?.splitChunks,
-        maxSize: dev ? 200000 : 100000, // 200KB in dev, 100KB in prod
         chunks: 'all',
+        cacheGroups: {
+          mantine: {
+            test: /[\\/]node_modules[\\/]@mantine[\\/]/,
+            name: 'mantine',
+            chunks: 'all',
+            priority: 20,
+          },
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+            priority: 10,
+          },
+        },
       },
     };
 
@@ -52,17 +62,44 @@ const nextConfig: NextConfig = {
     webpackBuildWorker: true,
   },
 
-  // Optimize output for better caching
+  // Production optimizations
   output: "standalone",
-
-  // Compress static assets
   compress: true,
+  poweredByHeader: false,
+
+  // Security headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
+  },
 
   // Optimize images
   images: {
-    // Reduce cache TTL to prevent excessive cache growth
-    minimumCacheTTL: 3600, // 1 hour instead of default 60 seconds
+    minimumCacheTTL: 3600,
     formats: ["image/webp", "image/avif"],
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };
 
