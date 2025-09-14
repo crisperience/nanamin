@@ -303,8 +303,8 @@ export default function Home() {
         padding: '20px 0',
       }}
     >
-      <Container size="md" className={styles.container} style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
-        <Stack gap={50} align="center" className={styles.mainStack} style={{ width: '100%' }}>
+      <Container size="md" className={styles.container} style={{ width: '100%', display: 'flex', alignItems: 'center', minWidth: 0 }}>
+        <Stack gap={50} align="center" className={styles.mainStack} style={{ width: '100%', minWidth: 0, overflow: 'hidden' }}>
           {/* Header Section */}
           <Stack gap="md" align="center">
             <Stack gap="sm" align="center">
@@ -724,8 +724,8 @@ export default function Home() {
                   Buy us instant ramen
                 </Button>
 
-                {/* Row 2: GitHub + Contact equal width */}
-                <Group gap="sm" justify="center" style={{ width: '100%' }}>
+                {/* Row 2: GitHub + Contact with responsive sizing */}
+                <div className={styles.mobileButtonRow}>
                   <Button
                     component="a"
                     href="https://github.com/crisperience/nanamin"
@@ -736,7 +736,6 @@ export default function Home() {
                     color="gray"
                     leftSection={<IconBrandGithub size={16} />}
                     className={styles.contactButton}
-                    style={{ flex: 1 }}
                   >
                     GitHub
                   </Button>
@@ -748,11 +747,11 @@ export default function Home() {
                     variant="outline"
                     color="violet"
                     leftSection={<IconMail size={16} />}
-                    style={{ flex: 1 }}
+                    className={styles.contactButton}
                   >
                     Contact
                   </Button>
-                </Group>
+                </div>
               </Stack>
             </Stack>
           </Card>

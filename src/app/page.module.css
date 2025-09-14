@@ -43,6 +43,10 @@
 
 .contactButton {
   font-size: 0.875rem;
+  min-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .footerText {
@@ -115,5 +119,64 @@
 @media (max-width: 47.99em) {
   .mobileContactButton {
     display: inline-flex;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 320px) {
+  .contactButton {
+    font-size: 0.75rem;
+    min-width: 100px !important;
+    padding: 8px 10px;
+    width: auto !important;
+  }
+  
+  .headerText {
+    font-size: 0.9rem;
+  }
+  
+  .mainCard {
+    padding: 12px;
+  }
+  
+  .supportCard {
+    padding: 12px;
+  }
+}
+
+/* Mobile button row layout */
+.mobileButtonRow {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.mobileButtonRow .contactButton {
+  flex: 1;
+  min-width: 120px;
+  max-width: 150px;
+}
+
+/* Very small screens - stack buttons vertically */
+@media (max-width: 320px) {
+  .mobileButtonRow {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .mobileButtonRow .contactButton {
+    width: 100%;
+    max-width: 200px;
+    min-width: auto;
+    flex: none;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 280px) {
+  .mobileButtonRow .contactButton {
+    max-width: 180px;
   }
 }
