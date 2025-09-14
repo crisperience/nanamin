@@ -159,9 +159,18 @@ export default function Home() {
       })
 
       // Compression complete - no notification needed
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Compression failed:', error)
-      // Compression failed - handle silently or show inline error
+
+      // Show user-friendly error notification
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during compression'
+      notifications.show({
+        title: 'Compression failed',
+        message: errorMessage,
+        color: 'red',
+        icon: <IconX size={16} />,
+        autoClose: 10000, // 10 seconds
+      })
     } finally {
       setIsProcessing(false)
       setCurrentFile('')
@@ -202,64 +211,146 @@ export default function Home() {
     const JSZip = (await import('jszip')).default
     const zip = new JSZip()
 
-    // Read the original CBZ/CBR file
-    const originalZip = await JSZip.loadAsync(file)
-    const files = Object.keys(originalZip.files)
-    const imageFiles = files.filter(fileName =>
-      /\.(jpg|jpeg|png|webp)$/i.test(fileName)
-    )
+    try {
+      let files: string[] = []
+      const fileDataMap: { [key: string]: { async: (type: string) => Promise<Blob | Uint8Array>; dir?: boolean } } = {}
 
-    let processedCount = 0
+      // Handle CBR files (RAR format)
+      if (file.name.toLowerCase().endsWith('.cbr')) {
+        const unrar = await import('node-unrar-js')
+        const buffer = await file.arrayBuffer()
 
-    // Process each image file
-    for (const fileName of files) {
-      // Check if aborted
-      if (abortSignal.aborted) {
-        throw new Error('Compression aborted')
-      }
+        // Load WASM binary
+        const wasmResponse = await fetch('/unrar.wasm')
+        const wasmBinary = await wasmResponse.arrayBuffer()
 
-      const fileData = originalZip.files[fileName]
-
-      if (fileData.dir) {
-        // Skip directories
-        continue
-      }
-
-      if (imageFiles.includes(fileName)) {
-        // Compress image files to WebP
-        const imageBlob = await fileData.async('blob')
-
-        // Create a proper File object with correct MIME type
-        const imageFile = new File([imageBlob], fileName, {
-          type: getImageMimeType(fileName)
+        // Create extractor from data
+        const extractor = await unrar.createExtractorFromData({
+          data: buffer,
+          wasmBinary: wasmBinary
         })
 
-        // Convert quality (0-100) to initialQuality (0-1)
-        const initialQuality = quality / 100
+        // Get file list (not needed for extraction, but required to consume iterator)
+        const list = extractor.getFileList()
+        // Consume the iterator to prevent memory leaks
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        for (const _ of list.fileHeaders) {
+          // Just iterate through to consume the generator
+        }
 
-        const compressedImage = await imageCompression(imageFile, {
-          fileType: 'image/webp',
-          initialQuality: initialQuality,
-          alwaysKeepResolution: true,
-          useWebWorker: true,
-          signal: abortSignal, // Pass abort signal to image compression
-        })
+        // Extract all files
+        const extracted = extractor.extract()
+        const extractedFiles = [...extracted.files] // Convert iterator to array
 
-        // Change extension to .webp
-        const webpFileName = fileName.replace(/\.(jpg|jpeg|png|webp)$/i, '.webp')
-        zip.file(webpFileName, compressedImage)
-      } else {
-        // Copy non-image files as-is
-        const fileContent = await fileData.async('uint8array')
-        zip.file(fileName, fileContent)
+        // Create file data map
+        for (const extractedFile of extractedFiles) {
+          if (!extractedFile.fileHeader.flags.directory && extractedFile.extraction) {
+            const fileName = extractedFile.fileHeader.name
+            const fileData = extractedFile.extraction
+
+            files.push(fileName)
+            fileDataMap[fileName] = {
+              async: async (type: string) => {
+                if (type === 'blob') {
+                  return new Blob([new Uint8Array(fileData)])
+                } else if (type === 'uint8array') {
+                  return new Uint8Array(fileData)
+                }
+                throw new Error(`Unsupported type: ${type}`)
+              }
+            }
+          }
+        }
+      }
+      // Handle CBZ files (ZIP format) - existing logic
+      else {
+        const originalZip = await JSZip.loadAsync(file)
+        files = Object.keys(originalZip.files)
+
+        // Create fileDataMap for ZIP files
+        for (const fileName of files) {
+          const zipFile = originalZip.files[fileName]
+          fileDataMap[fileName] = {
+            async: async (type: string) => {
+              if (type === 'blob') {
+                return await zipFile.async('blob')
+              } else if (type === 'uint8array') {
+                return await zipFile.async('uint8array')
+              }
+              throw new Error(`Unsupported type: ${type}`)
+            },
+            dir: zipFile.dir
+          }
+        }
       }
 
-      processedCount++
-      onProgress((processedCount / files.length) * 100)
+      // Common processing logic for both CBR and CBZ
+      const imageFiles = files.filter(fileName =>
+        /\.(jpg|jpeg|png|webp)$/i.test(fileName)
+      )
+
+      let processedCount = 0
+
+      // Process each file
+      for (const fileName of files) {
+        // Check if aborted
+        if (abortSignal.aborted) {
+          throw new Error('Compression aborted')
+        }
+
+        const fileData = fileDataMap[fileName]
+
+        // Skip directories (CBZ only, CBR already filtered)
+        if (fileData.dir) {
+          continue
+        }
+
+        if (imageFiles.includes(fileName)) {
+          // Compress image files to WebP
+          const imageBlob = await fileData.async('blob') as Blob
+
+          // Create a proper File object with correct MIME type
+          const imageFile = new File([imageBlob], fileName, {
+            type: getImageMimeType(fileName)
+          })
+
+          // Convert quality (0-100) to initialQuality (0-1)
+          const initialQuality = quality / 100
+
+          const compressedImage = await imageCompression(imageFile, {
+            fileType: 'image/webp',
+            initialQuality: initialQuality,
+            alwaysKeepResolution: true,
+            useWebWorker: true,
+            signal: abortSignal, // Pass abort signal to image compression
+          })
+
+          // Change extension to .webp
+          const webpFileName = fileName.replace(/\.(jpg|jpeg|png|webp)$/i, '.webp')
+          zip.file(webpFileName, compressedImage)
+        } else {
+          // Copy non-image files as-is
+          const fileContent = await fileData.async('uint8array') as Uint8Array
+          zip.file(fileName, fileContent)
+        }
+
+        processedCount++
+        onProgress((processedCount / files.length) * 100)
+      }
+
+      // Generate compressed CBZ (always output as CBZ regardless of input format)
+      return await zip.generateAsync({ type: 'blob' })
+    } catch (error: unknown) {
+      // Better error handling with more specific messages
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      if (file.name.toLowerCase().endsWith('.cbr')) {
+        throw new Error(`CBR file "${file.name}" processing failed: ${errorMessage}`)
+      } else if (file.name.toLowerCase().endsWith('.cbz')) {
+        throw new Error(`CBZ file "${file.name}" processing failed: ${errorMessage}`)
+      }
+      // Re-throw other errors
+      throw error
     }
-
-    // Generate compressed CBZ
-    return await zip.generateAsync({ type: 'blob' })
   }
 
   const downloadFiles = () => {

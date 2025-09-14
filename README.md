@@ -4,9 +4,12 @@
 
 Compress your CBZ and CBR files by 30-70% while maintaining visual quality. Everything happens locally in your browser - your files never leave your device.
 
+✨ **Now with full CBR support!** - Process both ZIP-based CBZ and RAR-based CBR files seamlessly.
+
 ## Features
 
 - **100% Private** - Files never leave your browser
+- **Universal Format Support** - CBZ (ZIP) and CBR (RAR) files
 - **Smart Compression** - Adjustable quality settings (30-100%)
 - **Real-time Stats** - See compression results instantly
 - **Large File Support** - Up to 1GB per file
@@ -15,7 +18,7 @@ Compress your CBZ and CBR files by 30-70% while maintaining visual quality. Ever
 
 - **Framework**: Next.js 15 + TypeScript
 - **UI Library**: Mantine + Tabler Icons
-- **Compression**: browser-image-compression + JSZip
+- **Compression**: browser-image-compression + JSZip + node-unrar-js
 
 ## Development
 
