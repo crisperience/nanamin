@@ -65,8 +65,11 @@ pnpm start
 - **Supported Formats**: CBZ, CBR input files
 - **Output Format**: CBZ with WebP images
 - **File Size Limit**: 1GB per file (browser dependent)
-- **Enhanced UX**: Quality controls hide after compression completes
-- **Better Error Handling**: Clear feedback for oversized files
+- **File Count Limit**: Maximum 50 files per batch
+- **Total Processing**: Depends on device memory (typically 10-20GB total)
+- **Enhanced UX**: Quality controls and compress button hide after completion
+- **Better Error Handling**: Clear feedback for oversized files and limits
+- **Mobile Optimized**: Responsive design for all screen sizes
 
 ## License
 

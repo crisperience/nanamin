@@ -1,0 +1,119 @@
+/* Mobile-first responsive styles */
+.container {
+  padding: 20px 16px;
+}
+
+.mainStack {
+  gap: 30px;
+}
+
+.headerText {
+  font-size: 1rem;
+  padding: 0 16px;
+}
+
+.featureGroup {
+  gap: 12px;
+}
+
+.featureBadge {
+  font-size: 0.875rem;
+}
+
+.mainCard {
+  padding: 16px;
+}
+
+.cardStack {
+  gap: 16px;
+}
+
+.fileList {
+  max-height: 100px;
+}
+
+.supportCard {
+  padding: 16px;
+}
+
+.buttonGroup {
+  gap: 8px;
+  flex-direction: column;
+}
+
+.contactButton {
+  font-size: 0.875rem;
+}
+
+.footerText {
+  font-size: 0.75rem;
+  padding: 0 16px;
+}
+
+/* Tablet and up */
+@media (min-width: 48em) {
+  .container {
+    padding: 40px 24px;
+  }
+
+  .mainStack {
+    gap: 50px;
+  }
+
+  .headerText {
+    font-size: 1.125rem;
+    padding: 0;
+  }
+
+  .featureGroup {
+    gap: 24px;
+  }
+
+  .featureBadge {
+    font-size: 1rem;
+  }
+
+  .mainCard {
+    padding: 24px;
+  }
+
+  .cardStack {
+    gap: 24px;
+  }
+
+  .fileList {
+    max-height: 120px;
+  }
+
+  .supportCard {
+    padding: 20px;
+  }
+
+  .buttonGroup {
+    gap: 12px;
+    flex-direction: row;
+  }
+
+  .contactButton {
+    font-size: 1rem;
+  }
+
+  .footerText {
+    font-size: 0.875rem;
+    padding: 0;
+  }
+}
+
+/* Hide contact button on desktop (floating widget is shown instead) */
+@media (min-width: 48em) {
+  .mobileContactButton {
+    display: none;
+  }
+}
+
+/* Show contact button only on mobile */
+@media (max-width: 47.99em) {
+  .mobileContactButton {
+    display: inline-flex;
+  }
+}

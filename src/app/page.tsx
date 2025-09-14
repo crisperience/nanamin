@@ -28,6 +28,7 @@ import {
   IconX
 } from '@tabler/icons-react'
 import { useCallback, useState } from 'react'
+import styles from './page.module.css'
 
 interface CompressionStats {
   originalSize: number
@@ -70,13 +71,25 @@ export default function Home() {
       return
     }
 
-    // Check for oversized files
-    const maxSize = 1024 * 1024 ** 2 // 1GB
+    // Check for oversized files and total count
+    const maxSize = 1024 * 1024 ** 2 // 1GB per file
+    const maxFiles = 50 // Maximum number of files
     const oversizedFiles = comicFiles.filter(file => file.size > maxSize)
+
     if (oversizedFiles.length > 0) {
       notifications.show({
         title: 'Files too large',
         message: `Some files exceed 1GB limit: ${oversizedFiles.map(f => f.name).join(', ')}`,
+        color: 'red',
+        icon: <IconX size={16} />,
+      })
+      return
+    }
+
+    if (comicFiles.length > maxFiles) {
+      notifications.show({
+        title: 'Too many files',
+        message: `Maximum ${maxFiles} files allowed. You selected ${comicFiles.length} files.`,
         color: 'red',
         icon: <IconX size={16} />,
       })
@@ -279,16 +292,17 @@ export default function Home() {
   return (
     <Box
       style={{
-        height: '100vh',
+        minHeight: '100vh',
         background: '#1e1e2e',
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
-        overflow: 'hidden',
+        overflow: 'auto',
+        padding: '20px 0',
       }}
     >
-      <Container size="md" py={40} style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-        <Stack gap={50} align="center" style={{ width: '100%' }}>
+      <Container size="md" className={styles.container} style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+        <Stack gap={50} align="center" className={styles.mainStack} style={{ width: '100%' }}>
           {/* Header Section */}
           <Stack gap="md" align="center">
             <Stack gap="sm" align="center">
@@ -300,20 +314,21 @@ export default function Home() {
               </Text>
             </Stack>
 
-            <Text size="lg" ta="center" c="gray.1" maw={600} lh={1.4}>
+            <Text size="lg" ta="center" c="gray.1" maw={600} lh={1.4} className={styles.headerText}>
               Advanced compression that saves{' '}
               <Text span fw={700} c="green.4">30-70% space</Text>{' '}
               while preserving visual quality.
             </Text>
 
             {/* Feature badges */}
-            <Group gap="lg">
+            <Group gap="lg" justify="center" className={styles.featureGroup}>
               <Badge
                 leftSection={<IconShield size={14} />}
                 variant="light"
                 color="green"
                 size="lg"
                 radius="xl"
+                className={styles.featureBadge}
               >
                 100% Private
               </Badge>
@@ -325,6 +340,7 @@ export default function Home() {
             shadow="xl"
             padding="xl"
             radius="xl"
+            className={styles.mainCard}
             style={{
               width: '100%',
               maxWidth: '600px',
@@ -333,7 +349,7 @@ export default function Home() {
               border: '1px solid rgba(255, 255, 255, 0.1)',
             }}
           >
-            <Stack gap="xl">
+            <Stack gap="xl" className={styles.cardStack}>
               {/* Dropzone - only show when no files are selected */}
               {files.length === 0 && (
                 <Dropzone
@@ -408,7 +424,7 @@ export default function Home() {
                       Clear Files
                     </Button>
                   </Group>
-                  <Stack gap="xs" mah={120} style={{ overflowY: 'auto' }}>
+                  <Stack gap="xs" className={styles.fileList} style={{ overflowY: 'auto' }}>
                     {files.map((file, index) => (
                       <Paper key={index} p="sm" radius="md"
                         style={{
@@ -443,64 +459,66 @@ export default function Home() {
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                   }}
                 >
-                <Stack gap="lg">
-                  <Group justify="space-between">
-                    <div>
-                      <Text size="sm" fw={500} c="white">
-                        Compression Quality
-                      </Text>
-                    </div>
-                    <Badge
-                      color={quality >= 90 ? 'green' : quality >= 70 ? 'yellow' : 'orange'}
-                      variant="light"
-                      size="lg"
-                    >
-                      {quality}%
-                    </Badge>
-                  </Group>
+                  <Stack gap="lg">
+                    <Group justify="space-between">
+                      <div>
+                        <Text size="sm" fw={500} c="white">
+                          Compression Quality
+                        </Text>
+                      </div>
+                      <Badge
+                        color={quality >= 90 ? 'green' : quality >= 70 ? 'yellow' : 'orange'}
+                        variant="light"
+                        size="lg"
+                      >
+                        {quality}%
+                      </Badge>
+                    </Group>
 
-                  <Slider
-                    value={quality}
-                    onChange={setQuality}
-                    min={30}
-                    max={100}
-                    step={5}
-                    marks={[
-                      { value: 30, label: '30%' },
-                      { value: 50, label: '50%' },
-                      { value: 70, label: '70%' },
-                      { value: 90, label: '90%' },
-                    ]}
-                    color="violet"
-                    size="md"
-                  />
+                    <Slider
+                      value={quality}
+                      onChange={setQuality}
+                      min={30}
+                      max={100}
+                      step={5}
+                      marks={[
+                        { value: 30, label: '30%' },
+                        { value: 50, label: '50%' },
+                        { value: 70, label: '70%' },
+                        { value: 90, label: '90%' },
+                      ]}
+                      color="violet"
+                      size="md"
+                    />
 
-                  <Text size="xs" c="gray.4" ta="center" mt="sm">
-                    Move slider left for smaller files or right for better quality
-                  </Text>
-                </Stack>
-              </Paper>
+                    <Text size="xs" c="gray.4" ta="center" mt="sm">
+                      Move slider left for smaller files or right for better quality
+                    </Text>
+                  </Stack>
+                </Paper>
               )}
 
-              {/* Action Button */}
-              <Button
-                onClick={compressFiles}
-                disabled={files.length === 0 || isProcessing}
-                size="xl"
-                radius="xl"
-                variant="filled"
-                color="violet"
-                loading={isProcessing}
-                loaderProps={{ type: 'dots' }}
-                fullWidth
-              >
-                {isProcessing
-                  ? 'Processing...'
-                  : files.length > 0
-                    ? `Compress ${files.length} file${files.length !== 1 ? 's' : ''}`
-                    : 'Select files to compress'
-                }
-              </Button>
+              {/* Action Button - Hide when results are showing */}
+              {!(stats && compressedFiles.length > 0) && (
+                <Button
+                  onClick={compressFiles}
+                  disabled={files.length === 0 || isProcessing}
+                  size="xl"
+                  radius="xl"
+                  variant="filled"
+                  color="violet"
+                  loading={isProcessing}
+                  loaderProps={{ type: 'dots' }}
+                  fullWidth
+                >
+                  {isProcessing
+                    ? 'Processing...'
+                    : files.length > 0
+                      ? `Compress ${files.length} file${files.length !== 1 ? 's' : ''}`
+                      : 'Select files to compress'
+                  }
+                </Button>
+              )}
 
               {/* Progress */}
               {isProcessing && (
@@ -573,7 +591,7 @@ export default function Home() {
                           c={stats.savings > 0 ? "green.4" : "orange.4"}
                           lh={1}
                         >
-                          {stats.savings > 0 ? '-' : '+'}{Math.abs(stats.savings).toFixed(1)}%
+                          {stats.savings > 0 ? '-' : '+'}{Math.round(Math.abs(stats.savings))}%
                         </Text>
                         <Text size="md" c="white" fw={500} mt="xs">
                           {stats.savings > 0 ? 'Space Saved' : 'Size Increased'}
@@ -639,6 +657,7 @@ export default function Home() {
             shadow="lg"
             padding="lg"
             radius="xl"
+            className={styles.supportCard}
             style={{
               width: '100%',
               maxWidth: '600px',
@@ -655,21 +674,36 @@ export default function Home() {
                 </Text>
               </div>
 
-              <Button
-                component="a"
-                href="https://buymeacoffee.com/crispsolutions"
-                target="_blank"
-                size="md"
-                radius="xl"
-                variant="filled"
-                color="orange"
-              >
-                Buy us a coffee (or a manga)
-              </Button>
+              <Group gap="sm" justify="center" className={styles.buttonGroup}>
+                <Button
+                  component="a"
+                  href="https://buymeacoffee.com/crispsolutions"
+                  target="_blank"
+                  size="md"
+                  radius="xl"
+                  variant="filled"
+                  color="orange"
+                  className={styles.contactButton}
+                >
+                  Buy us a coffee (or a manga)
+                </Button>
+                <Button
+                  component="a"
+                  href="mailto:martin@crisp.hr"
+                  size="md"
+                  radius="xl"
+                  variant="outline"
+                  color="violet"
+                  leftSection={<IconMail size={16} />}
+                  hiddenFrom="sm"
+                >
+                  Contact
+                </Button>
+              </Group>
             </Stack>
           </Card>
 
-          <Text size="sm" c="gray.4" ta="center">
+          <Text size="sm" c="gray.4" ta="center" className={styles.footerText}>
             Made with care for manga and comic lovers worldwide
           </Text>
         </Stack>
@@ -683,6 +717,7 @@ export default function Home() {
           right: 20,
           zIndex: 1000,
         }}
+        visibleFrom="sm"
       >
         <ThemeIcon
           size={56}
