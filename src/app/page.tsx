@@ -1,6 +1,18 @@
 'use client'
 
 import {
+  getSessionDuration,
+  startSession,
+  trackCompressionComplete,
+  trackCompressionError,
+  trackCompressionStart,
+  trackEvent,
+  trackFilesDownload,
+  trackFilesDrop,
+  trackQualityChange,
+  trackSupportAction
+} from '@/lib/analytics'
+import {
   Badge,
   Box,
   Button,
@@ -29,7 +41,7 @@ import {
   IconUpload,
   IconX
 } from '@tabler/icons-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import styles from './page.module.css'
 
 interface CompressionStats {
@@ -56,6 +68,15 @@ export default function Home() {
   const [currentFile, setCurrentFile] = useState<string>('')
   const [compressedFiles, setCompressedFiles] = useState<Blob[]>([])
   const [abortController, setAbortController] = useState<AbortController | null>(null)
+
+  // Analytics tracking refs
+  const compressionStartTime = useRef<number>(0)
+  const previousQuality = useRef<number>(85)
+
+  // Initialize analytics session on component mount
+  useEffect(() => {
+    startSession()
+  }, [])
 
   const handleDrop = useCallback((droppedFiles: FileWithPath[]) => {
     const comicFiles = droppedFiles.filter(file => {
@@ -102,6 +123,9 @@ export default function Home() {
     setStats(null)
     setCompressedFiles([])
 
+    // Track file drop analytics
+    trackFilesDrop(comicFiles)
+
     // Files loaded - no notification needed
   }, [])
 
@@ -111,6 +135,10 @@ export default function Home() {
     setIsProcessing(true)
     setProgress(0)
     setCompressedFiles([])
+
+    // Track compression start
+    compressionStartTime.current = Date.now()
+    trackCompressionStart(files, quality)
 
     // Create abort controller
     const controller = new AbortController()
@@ -158,9 +186,18 @@ export default function Home() {
         filesProcessed: files.length
       })
 
+      // Track compression completion
+      const processingTime = Date.now() - compressionStartTime.current
+      trackCompressionComplete(originalSize, compressedSize, files.length, quality, processingTime)
+
       // Compression complete - no notification needed
     } catch (error: unknown) {
       console.error('Compression failed:', error)
+
+      // Track compression error
+      if (error instanceof Error) {
+        trackCompressionError(error, files.length, quality)
+      }
 
       // Show user-friendly error notification
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during compression'
@@ -354,6 +391,10 @@ export default function Home() {
   }
 
   const downloadFiles = () => {
+    // Track download event
+    const totalSize = compressedFiles.reduce((sum, blob) => sum + blob.size, 0)
+    trackFilesDownload(compressedFiles.length, totalSize)
+
     compressedFiles.forEach((blob, index) => {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -367,6 +408,11 @@ export default function Home() {
   }
 
   const resetCompression = () => {
+    // Track reset event
+    trackEvent('compression_reset', {
+      sessionDuration: Math.round(getSessionDuration() / 1000)
+    })
+
     setFiles([])
     setStats(null)
     setCompressedFiles([])
@@ -377,6 +423,14 @@ export default function Home() {
 
   const abortCompression = () => {
     if (abortController) {
+      // Track cancellation
+      trackEvent('compression_cancelled', {
+        fileCount: files.length,
+        quality,
+        progress: Math.round(progress),
+        sessionDuration: Math.round(getSessionDuration() / 1000)
+      })
+
       abortController.abort()
       setAbortController(null)
     }
@@ -509,6 +563,12 @@ export default function Home() {
                       variant="subtle"
                       color="gray"
                       onClick={() => {
+                        // Track files cleared
+                        trackEvent('files_cleared', {
+                          fileCount: files.length,
+                          sessionDuration: Math.round(getSessionDuration() / 1000)
+                        })
+
                         setFiles([])
                         setStats(null)
                         setCompressedFiles([])
@@ -570,7 +630,14 @@ export default function Home() {
 
                     <Slider
                       value={quality}
-                      onChange={setQuality}
+                      onChange={(newQuality) => {
+                        // Track quality change
+                        if (newQuality !== previousQuality.current) {
+                          trackQualityChange(previousQuality.current, newQuality)
+                          previousQuality.current = newQuality
+                        }
+                        setQuality(newQuality)
+                      }}
                       min={30}
                       max={100}
                       step={5}
@@ -779,6 +846,7 @@ export default function Home() {
                   color="orange"
                   className={styles.contactButton}
                   leftSection={<IconBowlChopsticks size={16} />}
+                  onClick={() => trackSupportAction('coffee')}
                 >
                   Buy us instant ramen
                 </Button>
@@ -792,6 +860,7 @@ export default function Home() {
                   color="gray"
                   leftSection={<IconBrandGithub size={16} />}
                   className={styles.contactButton}
+                  onClick={() => trackSupportAction('github')}
                 >
                   GitHub
                 </Button>
@@ -811,6 +880,7 @@ export default function Home() {
                   className={styles.contactButton}
                   fullWidth
                   leftSection={<IconBowlChopsticks size={16} />}
+                  onClick={() => trackSupportAction('coffee')}
                 >
                   Buy us instant ramen
                 </Button>
@@ -827,6 +897,7 @@ export default function Home() {
                     color="gray"
                     leftSection={<IconBrandGithub size={16} />}
                     className={styles.contactButton}
+                    onClick={() => trackSupportAction('github')}
                   >
                     GitHub
                   </Button>
@@ -839,6 +910,7 @@ export default function Home() {
                     color="violet"
                     leftSection={<IconMail size={16} />}
                     className={styles.contactButton}
+                    onClick={() => trackSupportAction('contact')}
                   >
                     Contact
                   </Button>
@@ -872,7 +944,10 @@ export default function Home() {
             boxShadow: '0 4px 20px rgba(139, 92, 246, 0.3)',
             transition: 'all 0.3s ease',
           }}
-          onClick={() => window.open('mailto:martin@crisp.hr', '_blank')}
+          onClick={() => {
+            trackSupportAction('contact')
+            window.open('mailto:martin@crisp.hr', '_blank')
+          }}
           onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
             e.currentTarget.style.transform = 'scale(1.1)'
             e.currentTarget.style.boxShadow = '0 6px 25px rgba(139, 92, 246, 0.4)'
