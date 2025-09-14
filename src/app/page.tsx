@@ -18,6 +18,7 @@ import {
 import { Dropzone, FileWithPath } from '@mantine/dropzone'
 import { notifications } from '@mantine/notifications'
 import {
+  IconBrandGithub,
   IconCheck,
   IconDownload,
   IconFileZip,
@@ -674,7 +675,8 @@ export default function Home() {
                 </Text>
               </div>
 
-              <Group gap="sm" justify="center" className={styles.buttonGroup}>
+              {/* Desktop: All buttons in horizontal row */}
+              <Group gap="sm" justify="center" className={styles.buttonGroup} visibleFrom="sm">
                 <Button
                   component="a"
                   href="https://buymeacoffee.com/crispsolutions"
@@ -689,22 +691,71 @@ export default function Home() {
                 </Button>
                 <Button
                   component="a"
-                  href="mailto:martin@crisp.hr"
+                  href="https://github.com/crisperience/nanamin"
+                  target="_blank"
                   size="md"
                   radius="xl"
                   variant="outline"
-                  color="violet"
-                  leftSection={<IconMail size={16} />}
-                  hiddenFrom="sm"
+                  color="gray"
+                  leftSection={<IconBrandGithub size={16} />}
+                  className={styles.contactButton}
                 >
-                  Contact
+                  GitHub
                 </Button>
               </Group>
+
+              {/* Mobile: Two-row layout */}
+              <Stack gap="sm" align="center" className={styles.buttonGroup} hiddenFrom="sm">
+                {/* Row 1: Coffee button full width */}
+                <Button
+                  component="a"
+                  href="https://buymeacoffee.com/crispsolutions"
+                  target="_blank"
+                  size="md"
+                  radius="xl"
+                  variant="filled"
+                  color="orange"
+                  className={styles.contactButton}
+                  fullWidth
+                >
+                  Buy us a coffee (or a manga)
+                </Button>
+
+                {/* Row 2: GitHub + Contact equal width */}
+                <Group gap="sm" justify="center" style={{ width: '100%' }}>
+                  <Button
+                    component="a"
+                    href="https://github.com/crisperience/nanamin"
+                    target="_blank"
+                    size="md"
+                    radius="xl"
+                    variant="outline"
+                    color="gray"
+                    leftSection={<IconBrandGithub size={16} />}
+                    className={styles.contactButton}
+                    style={{ flex: 1 }}
+                  >
+                    GitHub
+                  </Button>
+                  <Button
+                    component="a"
+                    href="mailto:martin@crisp.hr"
+                    size="md"
+                    radius="xl"
+                    variant="outline"
+                    color="violet"
+                    leftSection={<IconMail size={16} />}
+                    style={{ flex: 1 }}
+                  >
+                    Contact
+                  </Button>
+                </Group>
+              </Stack>
             </Stack>
           </Card>
 
           <Text size="sm" c="gray.4" ta="center" className={styles.footerText}>
-            Made with care for manga and comic lovers worldwide
+            Made with care for comic and manga lovers worldwide
           </Text>
         </Stack>
       </Container>

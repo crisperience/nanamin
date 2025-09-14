@@ -1,21 +1,21 @@
-# 📚 Nanamin
+# Nanamin
 
 **Fast, privacy-first comic & manga compression in your browser.**
 
 Compress your CBZ and CBR files by 30-70% while maintaining visual quality. Everything happens locally in your browser - your files never leave your device.
 
-## ✨ Features
+## Features
 
-- 🔒 **100% Private** - Files never leave your browser
-- 🎯 **Smart Compression** - Adjustable quality settings (30-100%)
-- 📱 **Modern UI** - Clean, responsive design with Mantine components
-- 🌙 **Dark Theme** - Easy on the eyes for long sessions
-- 📊 **Real-time Stats** - See compression results instantly
-- 📈 **Analytics** - Vercel Analytics for usage insights
-- 🔍 **SEO Optimized** - Enhanced metadata and social sharing
-- 📁 **Large File Support** - Up to 1GB per file
+- **100% Private** - Files never leave your browser
+- **Smart Compression** - Adjustable quality settings (30-100%)
+- **Modern UI** - Clean, responsive design with Mantine components
+- **Dark Theme** - Easy on the eyes for long sessions
+- **Real-time Stats** - See compression results instantly
+- **Analytics** - Vercel Analytics for usage insights
+- **SEO Optimized** - Enhanced metadata and social sharing
+- **Large File Support** - Up to 1GB per file
 
-## 🚀 Tech Stack
+## Tech Stack
 
 - **Framework**: Next.js 15 + TypeScript
 - **UI Library**: Mantine + Tabler Icons
@@ -23,7 +23,7 @@ Compress your CBZ and CBR files by 30-70% while maintaining visual quality. Ever
 - **Styling**: Modern CSS-in-JS with Mantine
 - **Deployment**: Vercel-optimized
 
-## 🛠️ Development
+## Development
 
 ```bash
 # Install dependencies
@@ -39,7 +39,7 @@ pnpm build
 pnpm type-check
 ```
 
-## 📦 Deployment
+## Deployment
 
 The project is optimized for Vercel deployment:
 
@@ -52,14 +52,14 @@ pnpm build
 pnpm start
 ```
 
-## 🎯 How It Works
+## How It Works
 
 1. **Drop Files**: Drag & drop your CBZ/CBR files
 2. **Adjust Quality**: Use the slider to set compression level
 3. **Process**: Click compress and watch the magic happen
 4. **Download**: Get your compressed files instantly
 
-## 🔧 Configuration
+## Configuration
 
 - **Quality Settings**: 30% (max compression) to 100% (minimal compression)
 - **Supported Formats**: CBZ, CBR input files
