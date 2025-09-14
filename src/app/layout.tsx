@@ -3,28 +3,70 @@ import '@mantine/core/styles.css';
 import '@mantine/dropzone/styles.css';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
-import type { Metadata } from "next";
+import { Analytics } from '@vercel/analytics/next';
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+}
+
 export const metadata: Metadata = {
-  title: "Nanamin - Compress Your Manga & Comics",
+  metadataBase: new URL('https://nanamin.vercel.app'),
+  title: {
+    default: "Nanamin - Compress Your Manga & Comics",
+    template: "%s | Nanamin"
+  },
   description: "Compress your favorite manga and comic books. Save 30-70% space while keeping quality. 100% private, lightning fast, works in your browser.",
-  keywords: ["CBZ", "comic", "compression", "manga", "WebP", "privacy", "space saving", "file compression"],
-  authors: [{ name: "Martin" }],
+  keywords: ["CBZ", "CBR", "comic", "compression", "manga", "WebP", "privacy", "space saving", "file compression", "browser compression", "comic book compression"],
+  authors: [{ name: "Martin", url: "https://crisp.hr" }],
   creator: "Martin",
   publisher: "Nanamin",
-  robots: "index, follow",
+  category: "Technology",
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
     title: "Nanamin - Compress Your Manga & Comics",
-    description: "Save space on your manga collection. 100% private compression in your browser.",
+    description: "Save space on your manga collection. 30-70% compression with 100% privacy. Works entirely in your browser.",
     type: "website",
     locale: "en_US",
+    url: "https://nanamin.vercel.app",
+    siteName: "Nanamin",
+    images: [
+      {
+        url: "/og-image.svg",
+        width: 1200,
+        height: 630,
+        alt: "Nanamin - Comic & Manga Compressor",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Nanamin - Compress Your Manga & Comics",
-    description: "Save space on your manga collection. 100% private compression in your browser.",
+    description: "Save space on your manga collection. 30-70% compression with 100% privacy.",
+    images: ["/og-image.svg"],
+    creator: "@crispsolutions",
+  },
+  alternates: {
+    canonical: "https://nanamin.vercel.app",
+  },
+  verification: {
+    google: "your-google-site-verification-code",
   },
 };
 
@@ -61,6 +103,7 @@ export default function RootLayout({
         <MantineProvider theme={theme} defaultColorScheme="dark">
           <Notifications />
           {children}
+          <Analytics />
           <Script
             src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js"
             data-name="bmc-button"

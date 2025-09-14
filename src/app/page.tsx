@@ -70,6 +70,19 @@ export default function Home() {
       return
     }
 
+    // Check for oversized files
+    const maxSize = 1024 * 1024 ** 2 // 1GB
+    const oversizedFiles = comicFiles.filter(file => file.size > maxSize)
+    if (oversizedFiles.length > 0) {
+      notifications.show({
+        title: 'Files too large',
+        message: `Some files exceed 1GB limit: ${oversizedFiles.map(f => f.name).join(', ')}`,
+        color: 'red',
+        icon: <IconX size={16} />,
+      })
+      return
+    }
+
     setFiles(comicFiles)
     setStats(null)
     setCompressedFiles([])
@@ -161,7 +174,13 @@ export default function Home() {
   const compressCbzFile = async (
     file: File,
     quality: number,
-    imageCompression: (file: File, options: any) => Promise<File>,
+    imageCompression: (file: File, options: {
+      fileType?: string;
+      initialQuality?: number;
+      alwaysKeepResolution?: boolean;
+      useWebWorker?: boolean;
+      signal?: AbortSignal;
+    }) => Promise<File>,
     abortSignal: AbortSignal,
     onProgress: (progress: number) => void
   ): Promise<Blob> => {
@@ -325,7 +344,7 @@ export default function Home() {
                     'application/vnd.comicbook+zip',
                     'application/vnd.comicbook-rar'
                   ]}
-                  maxSize={500 * 1024 ** 2} // 500MB
+                  maxSize={1024 * 1024 ** 2} // 1GB - increased for large comic collections
                   radius="xl"
                   h={200}
                   style={{
@@ -416,13 +435,14 @@ export default function Home() {
                 </Stack>
               )}
 
-              {/* Quality Control */}
-              <Paper p="md" radius="md"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}
-              >
+              {/* Quality Control - Hide after compression is complete */}
+              {!(stats && compressedFiles.length > 0) && (
+                <Paper p="md" radius="md"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                  }}
+                >
                 <Stack gap="lg">
                   <Group justify="space-between">
                     <div>
@@ -460,6 +480,7 @@ export default function Home() {
                   </Text>
                 </Stack>
               </Paper>
+              )}
 
               {/* Action Button */}
               <Button
@@ -630,7 +651,7 @@ export default function Home() {
               <div>
                 <Title order={4} c="white" ta="center">Support Nanamin</Title>
                 <Text size="sm" c="gray.3" ta="center" mt="xs">
-                  Help keep Nanamin alive and add new features
+                  Keep Nanamin running and help us build new features
                 </Text>
               </div>
 
