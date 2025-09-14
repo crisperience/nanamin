@@ -122,7 +122,7 @@ export default function RootLayout({
             data-color="#8B5CF6"
             data-emoji=""
             data-font="Inter"
-            data-text="Buy us a coffee (or a manga)"
+            data-text="Buy us instant ramen"
             data-outline-color="#1F2937"
             data-font-color="#FFFFFF"
             data-coffee-color="#8B5CF6"

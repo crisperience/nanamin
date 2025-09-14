@@ -18,6 +18,7 @@ import {
 import { Dropzone, FileWithPath } from '@mantine/dropzone'
 import { notifications } from '@mantine/notifications'
 import {
+  IconBowlChopsticks,
   IconBrandGithub,
   IconCheck,
   IconDownload,
@@ -686,8 +687,9 @@ export default function Home() {
                   variant="filled"
                   color="orange"
                   className={styles.contactButton}
+                  leftSection={<IconBowlChopsticks size={16} />}
                 >
-                  Buy us a coffee (or a manga)
+                  Buy us instant ramen
                 </Button>
                 <Button
                   component="a"
@@ -717,8 +719,9 @@ export default function Home() {
                   color="orange"
                   className={styles.contactButton}
                   fullWidth
+                  leftSection={<IconBowlChopsticks size={16} />}
                 >
-                  Buy us a coffee (or a manga)
+                  Buy us instant ramen
                 </Button>
 
                 {/* Row 2: GitHub + Contact equal width */}
