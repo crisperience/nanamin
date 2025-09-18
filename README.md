@@ -4,8 +4,6 @@
 
 Compress your CBZ and CBR files by 30-70% while maintaining visual quality. Everything happens locally in your browser - your files never leave your device.
 
-✨ **Now with full CBR support!** - Process both ZIP-based CBZ and RAR-based CBR files seamlessly.
-
 ## Features
 
 - **100% Private** - Files never leave your browser
@@ -17,7 +15,6 @@ Compress your CBZ and CBR files by 30-70% while maintaining visual quality. Ever
 ## Tech Stack
 
 - **Framework**: Next.js 15 + TypeScript
-- **UI Library**: Mantine + Tabler Icons
 - **Compression**: browser-image-compression + JSZip + node-unrar-js
 
 ## Development
@@ -34,19 +31,6 @@ pnpm build
 
 # Type checking
 pnpm type-check
-```
-
-## Deployment
-
-The project is optimized for Vercel deployment:
-
-```bash
-# Deploy to Vercel
-vercel
-
-# Or build locally
-pnpm build
-pnpm start
 ```
 
 ## How It Works
