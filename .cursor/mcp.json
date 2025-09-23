@@ -1,1 +1,21 @@
-{"mcpServers":{"context7":{"command":"npx","args":["-y","@upstash/context7-mcp","--api-key","ctx7sk-a53e3bb5-dd42-4aa6-9d3d-5407a65c3b19"]},"shadcn":{"command":"npx","args":["shadcn@latest","mcp"]}}}
+{
+  "mcpServers": {
+    "sentry": {
+      "command": "npx",
+      "args": ["@sentry/mcp-server@latest", "--access-token", "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"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "ctx7sk-a53e3bb5-dd42-4aa6-9d3d-5407a65c3b19"
+      ]
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
+    }
+  }
+}

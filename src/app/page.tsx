@@ -29,6 +29,7 @@ import {
 } from '@mantine/core'
 import { Dropzone, FileWithPath } from '@mantine/dropzone'
 import { notifications } from '@mantine/notifications'
+import * as Sentry from "@sentry/nextjs"
 import {
   IconBowlChopsticks,
   IconBrandGithub,
@@ -192,10 +193,22 @@ export default function Home() {
 
       // Compression complete - no notification needed
     } catch (error: unknown) {
-      console.error('Compression failed:', error)
-
-      // Track compression error
+      // Capture error in Sentry
       if (error instanceof Error) {
+        Sentry.captureException(error, {
+          tags: {
+            section: 'compression',
+            fileCount: files.length,
+            quality: quality
+          },
+          extra: {
+            fileNames: files.map(f => f.name),
+            fileSizes: files.map(f => f.size),
+            processingTime: Date.now() - compressionStartTime.current
+          }
+        })
+        
+        // Track compression error in analytics
         trackCompressionError(error, files.length, quality)
       }
 
@@ -435,6 +448,7 @@ export default function Home() {
       setAbortController(null)
     }
   }
+
 
   return (
     <Box
@@ -885,7 +899,7 @@ export default function Home() {
                   Buy us instant ramen
                 </Button>
 
-                {/* Row 2: GitHub + Contact with responsive sizing */}
+                {/* Row 2: GitHub + Contact + Test Sentry with responsive sizing */}
                 <div className={styles.mobileButtonRow}>
                   <Button
                     component="a"

@@ -17,6 +17,7 @@
     "@mantine/core": "^8.3.1",
     "@mantine/dropzone": "^8.3.1",
     "@mantine/notifications": "^8.3.1",
+    "@sentry/nextjs": "^10.14.0",
     "@tabler/icons-react": "^3.34.1",
     "@vercel/analytics": "^1.5.0",
     "browser-image-compression": "^2.0.2",
