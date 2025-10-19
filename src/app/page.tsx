@@ -195,15 +195,26 @@ export default function Home() {
     } catch (error: unknown) {
       // Capture error in Sentry
       if (error instanceof Error) {
+        const cbrFiles = files.filter(f => f.name.toLowerCase().endsWith('.cbr'))
+        const cbzFiles = files.filter(f => f.name.toLowerCase().endsWith('.cbz'))
+        
         Sentry.captureException(error, {
           tags: {
             section: 'compression',
             fileCount: files.length,
-            quality: quality
+            quality: quality,
+            hasCBR: cbrFiles.length > 0,
+            hasCBZ: cbzFiles.length > 0,
+            fileType: currentFile.toLowerCase().endsWith('.cbr') ? 'cbr' : 
+                     currentFile.toLowerCase().endsWith('.cbz') ? 'cbz' : 'unknown'
           },
           extra: {
             fileNames: files.map(f => f.name),
             fileSizes: files.map(f => f.size),
+            fileTypes: files.map(f => f.name.toLowerCase().endsWith('.cbr') ? 'cbr' : 'cbz'),
+            cbrCount: cbrFiles.length,
+            cbzCount: cbzFiles.length,
+            currentFile: currentFile,
             processingTime: Date.now() - compressionStartTime.current
           }
         })
@@ -267,49 +278,65 @@ export default function Home() {
 
       // Handle CBR files (RAR format)
       if (file.name.toLowerCase().endsWith('.cbr')) {
-        const unrar = await import('node-unrar-js')
-        const buffer = await file.arrayBuffer()
+        try {
+          const unrar = await import('node-unrar-js')
+          const buffer = await file.arrayBuffer()
 
-        // Load WASM binary
-        const wasmResponse = await fetch('/unrar.wasm')
-        const wasmBinary = await wasmResponse.arrayBuffer()
+          // Load WASM binary
+          const wasmResponse = await fetch('/unrar.wasm')
+          if (!wasmResponse.ok) {
+            throw new Error(`Failed to load unrar.wasm: ${wasmResponse.status} ${wasmResponse.statusText}`)
+          }
+          const wasmBinary = await wasmResponse.arrayBuffer()
 
-        // Create extractor from data
-        const extractor = await unrar.createExtractorFromData({
-          data: buffer,
-          wasmBinary: wasmBinary
-        })
+          // Create extractor from data
+          const extractor = await unrar.createExtractorFromData({
+            data: buffer,
+            wasmBinary: wasmBinary
+          })
 
-        // Get file list (not needed for extraction, but required to consume iterator)
-        const list = extractor.getFileList()
-        // Consume the iterator to prevent memory leaks
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        for (const _ of list.fileHeaders) {
-          // Just iterate through to consume the generator
-        }
+          // Get file list (not needed for extraction, but required to consume iterator)
+          const list = extractor.getFileList()
+          const fileHeadersArray = [...list.fileHeaders] // Convert to array to check if empty
+          
+          if (fileHeadersArray.length === 0) {
+            throw new Error('No files found in CBR archive')
+          }
 
-        // Extract all files
-        const extracted = extractor.extract()
-        const extractedFiles = [...extracted.files] // Convert iterator to array
+          // Extract all files
+          const extracted = extractor.extract()
+          const extractedFiles = [...extracted.files] // Convert iterator to array
 
-        // Create file data map
-        for (const extractedFile of extractedFiles) {
-          if (!extractedFile.fileHeader.flags.directory && extractedFile.extraction) {
-            const fileName = extractedFile.fileHeader.name
-            const fileData = extractedFile.extraction
+          if (extractedFiles.length === 0) {
+            throw new Error('Failed to extract any files from CBR archive')
+          }
 
-            files.push(fileName)
-            fileDataMap[fileName] = {
-              async: async (type: string) => {
-                if (type === 'blob') {
-                  return new Blob([new Uint8Array(fileData)])
-                } else if (type === 'uint8array') {
-                  return new Uint8Array(fileData)
+          // Create file data map
+          for (const extractedFile of extractedFiles) {
+            if (!extractedFile.fileHeader.flags.directory && extractedFile.extraction) {
+              const fileName = extractedFile.fileHeader.name
+              const fileData = extractedFile.extraction
+
+              files.push(fileName)
+              fileDataMap[fileName] = {
+                async: async (type: string) => {
+                  if (type === 'blob') {
+                    return new Blob([new Uint8Array(fileData)])
+                  } else if (type === 'uint8array') {
+                    return new Uint8Array(fileData)
+                  }
+                  throw new Error(`Unsupported type: ${type}`)
                 }
-                throw new Error(`Unsupported type: ${type}`)
               }
             }
           }
+
+          if (files.length === 0) {
+            throw new Error('No valid image files found in CBR archive')
+          }
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+          throw new Error(`CBR extraction failed: ${errorMessage}`)
         }
       }
       // Handle CBZ files (ZIP format) - existing logic
@@ -412,7 +439,12 @@ export default function Home() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `compressed_${files[index].name}`
+      // Convert .cbr to .cbz in the output filename since we always output CBZ format
+      const originalName = files[index].name
+      const outputName = originalName.toLowerCase().endsWith('.cbr') 
+        ? originalName.replace(/\.cbr$/i, '.cbz')
+        : originalName
+      a.download = `compressed_${outputName}`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -515,12 +547,16 @@ export default function Home() {
               {files.length === 0 && (
                 <Dropzone
                   onDrop={handleDrop}
-                  accept={[
-                    'application/x-cbz',
-                    'application/x-cbr',
-                    'application/vnd.comicbook+zip',
-                    'application/vnd.comicbook-rar'
-                  ]}
+                  accept={{
+                    'application/x-cbz': ['.cbz'],
+                    'application/zip': ['.cbz'],
+                    'application/x-cbr': ['.cbr'],
+                    'application/x-rar': ['.cbr'],
+                    'application/x-rar-compressed': ['.cbr'],
+                    'application/vnd.rar': ['.cbr'],
+                    'application/vnd.comicbook+zip': ['.cbz'],
+                    'application/vnd.comicbook-rar': ['.cbr']
+                  }}
                   maxSize={1024 * 1024 ** 2} // 1GB - increased for large comic collections
                   radius="xl"
                   h={200}
