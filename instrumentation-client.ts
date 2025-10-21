@@ -21,27 +21,25 @@ if (typeof window !== 'undefined' && !window.__SENTRY_INITIALIZED__) {
     // Environment configuration
     environment: process.env.NODE_ENV || 'development',
 
-    // Configure replay rates for production
-    replaysOnErrorSampleRate: process.env.NODE_ENV === 'production' ? 1.0 : 0,
-    replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
+    // Enable logs to be sent to Sentry (moved from _experiments)
+    enableLogs: true,
+
+    // Configure replay rates
+    // Enable limited replay in development for debugging (10% of sessions)
+    replaysOnErrorSampleRate: 1.0, // Always capture replay on error
+    replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0.1,
 
     // You can remove this option if you're not planning to use the Sentry Session Replay feature:
     integrations: [
-      // Only enable replay in production to avoid multiple instances in development
-      ...(process.env.NODE_ENV === 'production' ? [
-        Sentry.replayIntegration({
-          // Additional Replay configuration goes in here, for example:
-          maskAllText: true,
-          blockAllMedia: true,
-        })
-      ] : []),
+      // Enable replay in both development and production
+      Sentry.replayIntegration({
+        // Additional Replay configuration goes in here, for example:
+        maskAllText: true,
+        blockAllMedia: true,
+      }),
       // Send console.log, console.warn, and console.error calls as logs to Sentry
       Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
     ],
-
-    _experiments: {
-      enableLogs: true,
-    },
   });
 
   // Mark as initialized

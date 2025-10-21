@@ -193,8 +193,15 @@ export default function Home() {
 
       // Compression complete - no notification needed
     } catch (error: unknown) {
-      // Capture error in Sentry
-      if (error instanceof Error) {
+      // Check if this is a user cancellation (not an actual error)
+      const isUserCancellation = error instanceof Error && (
+        error.message === 'Compression aborted' ||
+        error.message.includes('signal is aborted') ||
+        error.message.includes('aborted')
+      )
+
+      // Only report actual errors to Sentry, not user cancellations
+      if (error instanceof Error && !isUserCancellation) {
         const cbrFiles = files.filter(f => f.name.toLowerCase().endsWith('.cbr'))
         const cbzFiles = files.filter(f => f.name.toLowerCase().endsWith('.cbz'))
         
@@ -219,19 +226,21 @@ export default function Home() {
           }
         })
         
-        // Track compression error in analytics
+        // Track compression error in analytics (only for real errors)
         trackCompressionError(error, files.length, quality)
       }
 
-      // Show user-friendly error notification
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during compression'
-      notifications.show({
-        title: 'Compression failed',
-        message: errorMessage,
-        color: 'red',
-        icon: <IconX size={16} />,
-        autoClose: 10000, // 10 seconds
-      })
+      // Only show error notification for actual errors, not user cancellations
+      if (!isUserCancellation) {
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during compression'
+        notifications.show({
+          title: 'Compression failed',
+          message: errorMessage,
+          color: 'red',
+          icon: <IconX size={16} />,
+          autoClose: 10000, // 10 seconds
+        })
+      }
     } finally {
       setIsProcessing(false)
       setCurrentFile('')

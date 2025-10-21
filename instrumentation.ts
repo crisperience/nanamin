@@ -10,28 +10,6 @@ export async function register() {
     }
 }
 
-export async function onRequestError(
-    err: unknown,
-    request: {
-        path: string;
-    },
-    context: {
-        routerKind: string;
-        routePath: string;
-        routeType: string;
-    }
-) {
-    // Capture the error with additional context
-    Sentry.captureException(err, {
-        tags: {
-            section: 'request_error',
-            routerKind: context.routerKind,
-            routeType: context.routeType,
-        },
-        extra: {
-            requestPath: request.path,
-            routePath: context.routePath,
-            context,
-        },
-    });
-}
+// Use Sentry's built-in captureRequestError for Next.js 15+
+// This properly handles nested React Server Component errors
+export const onRequestError = Sentry.captureRequestError;
