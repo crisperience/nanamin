@@ -204,7 +204,7 @@ export default function Home() {
       if (error instanceof Error && !isUserCancellation) {
         const cbrFiles = files.filter(f => f.name.toLowerCase().endsWith('.cbr'))
         const cbzFiles = files.filter(f => f.name.toLowerCase().endsWith('.cbz'))
-        
+
         Sentry.captureException(error, {
           tags: {
             section: 'compression',
@@ -212,8 +212,8 @@ export default function Home() {
             quality: quality,
             hasCBR: cbrFiles.length > 0,
             hasCBZ: cbzFiles.length > 0,
-            fileType: currentFile.toLowerCase().endsWith('.cbr') ? 'cbr' : 
-                     currentFile.toLowerCase().endsWith('.cbz') ? 'cbz' : 'unknown'
+            fileType: currentFile.toLowerCase().endsWith('.cbr') ? 'cbr' :
+              currentFile.toLowerCase().endsWith('.cbz') ? 'cbz' : 'unknown'
           },
           extra: {
             fileNames: files.map(f => f.name),
@@ -225,7 +225,7 @@ export default function Home() {
             processingTime: Date.now() - compressionStartTime.current
           }
         })
-        
+
         // Track compression error in analytics (only for real errors)
         trackCompressionError(error, files.length, quality)
       }
@@ -307,7 +307,7 @@ export default function Home() {
           // Get file list (not needed for extraction, but required to consume iterator)
           const list = extractor.getFileList()
           const fileHeadersArray = [...list.fileHeaders] // Convert to array to check if empty
-          
+
           if (fileHeadersArray.length === 0) {
             throw new Error('No files found in CBR archive')
           }
@@ -450,7 +450,7 @@ export default function Home() {
       a.href = url
       // Convert .cbr to .cbz in the output filename since we always output CBZ format
       const originalName = files[index].name
-      const outputName = originalName.toLowerCase().endsWith('.cbr') 
+      const outputName = originalName.toLowerCase().endsWith('.cbr')
         ? originalName.replace(/\.cbr$/i, '.cbz')
         : originalName
       a.download = `compressed_${outputName}`
